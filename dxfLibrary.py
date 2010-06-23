@@ -1,9 +1,9 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.33 - 2009.06.16"
+__version__ = "v1.35 - 2010.06.23"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius)"
 __license__ = "GPL"
-__url__ = "http://wiki.blender.org/index.php/Scripts/Manual/Export/autodesk_dxf"
+__url__ = "http://wiki.blender.org/index.php/Extensions:2.4/Py/Scripts/Export/DXF"
 __bpydoc__ ="""The library to export geometry data to DXF format r12 version.
 
 Copyright %s
@@ -18,12 +18,19 @@ IDEAs:
 -
 
 TODO:
-- add support for DXFr14 (needs extended file header)
-- add support for SPLINEs (possible first in DXFr14 version)
+- add support for DXFr14 version (needs extended file header)
+- add support for DXF-SPLINEs (possible first in DXFr14 version)
+- add support for DXF-MTEXT
 - add user preset for floating point precision (3-16?)
 
 History
-v1.33 - 2009.06.16 by migius
+v1.35 - 2010.06.23 by migius
+ - added (as default) writing to DXF file without RAM-buffering: faster and low-RAM-machines friendly
+v1.34 - 2010.06.20 by migius
+ - bugfix POLYFACE
+ - added DXF-flags for POLYLINE and VERTEX class (NURBS-export)
+v1.33 - 2009.07.03 by migius
+ - fix MTEXT newline bug (not supported by DXF-Exporter yet)
  - modif _point(): converts all coords to floats
  - modif LineType class: implement elements
  - added VPORT class, incl. defaults
@@ -93,7 +100,6 @@ _HEADER_POINTS=['insbase','extmin','extmax']
 #---helper functions-----------------------------------
 def _point(x,index=0):
 	"""Convert tuple to a dxf point"""
-	#print 'deb: _point=', x #-------------
 	return '\n'.join([' %s\n%s'%((i+1)*10+index,float(x[i])) for i in range(len(x))])
 
 def _points(plist):
@@ -205,7 +211,7 @@ BY_STYLE = 5 #the flow direction is inherited from the associated text style
 AT_LEAST = 1 #taller characters will override
 EXACT = 2 #taller characters will not override
 
-#---polyline flags
+#---polyline flag 70
 CLOSED =1	  # This is a closed polyline (or a polygon mesh closed in the M direction)
 CURVE_FIT =2	  # Curve-fit vertices have been added
 SPLINE_FIT =4	  # Spline-fit vertices have been added
@@ -214,6 +220,12 @@ POLYGON_MESH =16	 # This is a 3D polygon mesh
 CLOSED_N =32	 # The polygon mesh is closed in the N direction
 POLYFACE_MESH =64	 # The polyline is a polyface mesh
 CONTINOUS_LINETYPE_PATTERN =128	# The linetype pattern is generated continuously around the vertices of this polyline
+
+#---polyline flag 75, = curve type
+QUADRIC_NURBS = 5
+CUBIC_NURBS = 6
+BEZIER_CURVE = 8
+
 
 #---text flags
 #horizontal
@@ -269,7 +281,6 @@ class Face(_Entity):
 		
 	def __str__(self):
 		out = '  0\n3DFACE\n%s%s\n' %(self._common(),_points(self.points))
-		#print 'deb:out=', out #-------------------
 		return out
 
 #-----------------------------------------------
@@ -318,34 +329,34 @@ class Line(_Entity):
 
 #-----------------------------------------------
 class PolyLine(_Entity):
-	def __init__(self,points,org_point=[0,0,0],flag=0,width=None,**common):
+	def __init__(self,points,org_point=[0,0,0],flag70=0,flag75=0,width=None,**common):
 		#width = number, or width = list [width_start=None, width_end=None]
-		#for 2d-polyline: points = [ [x, y, z, width_start=None, width_end=None, bulge=0 or None], ...]
-		#for 3d-polyline: points = [ [x, y, z], ...]
+		#for 2d-polyline: points = [ [[x, y, z], vflag=None, [width_start=None, width_end=None], bulge=0 or None] ...]
+		#for 3d-polyline: points = [ [[x, y, z], vflag=None], ...]
 		#for polyface: points = [points_list, faces_list]
 		_Entity.__init__(self,**common)
 		self.points=points
 		self.org_point=org_point
-		self.flag=flag
+		self.pflag70 = flag70
+		self.pflag75 = flag75
 		self.polyface = False
 		self.polyline2d = False
 		self.faces = [] # dummy value
 		self.width= None # dummy value
-		if self.flag & POLYFACE_MESH:
+		if self.pflag70 & POLYFACE_MESH:
 			self.polyface=True
 			self.points=points[0]
 			self.faces=points[1]
 			self.p_count=len(self.points)
 			self.f_count=len(self.faces)
-		elif not self.flag & POLYLINE_3D:
+		elif not (self.pflag70 & POLYLINE_3D):
 			self.polyline2d = True
 			if width:
-				if type(width)!='list':
-					width=[width,width]
+				if type(width)!='list':  width=[width,width]
 				self.width=width
 
 	def __str__(self):
-		result= '  0\nPOLYLINE\n%s 70\n%s\n' %(self._common(),self.flag)
+		result= '  0\nPOLYLINE\n%s 70\n%s\n' %(self._common(),self.pflag70)
 		result+=' 66\n1\n'
 		result+='%s\n' %_point(self.org_point)
 		if self.polyface:
@@ -353,23 +364,32 @@ class PolyLine(_Entity):
 			result+=' 72\n%s\n' %self.f_count
 		elif self.polyline2d:
 			if self.width!=None: result+=' 40\n%s\n 41\n%s\n' %(self.width[0],self.width[1])
+		if self.pflag75:
+			result+=' 75\n%s\n' %self.pflag75
 		for point in self.points:
 			result+='  0\nVERTEX\n'
 			result+='  8\n%s\n' %self.layer
 			if self.polyface:
-				result+='%s\n' %_point(point[0:3])
+				result+='%s\n' %_point(point)
 				result+=' 70\n192\n'
 			elif self.polyline2d:
-				result+='%s\n' %_point(point[0:2])
-				if len(point)>4:
-					width1, width2 = point[3], point[4]
+				result+='%s\n' %_point(point[0])
+				flag = point[1]
+				if len(point)>2:
+					[width1, width2] = point[2]
 					if width1!=None: result+=' 40\n%s\n' %width1
 					if width2!=None: result+=' 41\n%s\n' %width2
-				if len(point)==6:
-					bulge = point[5]
+				if len(point)==4:
+					bulge = point[3]
 					if bulge: result+=' 42\n%s\n' %bulge
+				if flag:
+						result+=' 70\n%s\n' %flag
 			else:
-				result+='%s\n' %_point(point[0:3])
+				result+='%s\n' %_point(point[0])
+				flag = point[1]
+				if flag:
+						result+=' 70\n%s\n' %flag
+
 		for face in self.faces:
 			result+='  0\nVERTEX\n'
 			result+='  8\n%s\n' %self.layer
@@ -456,7 +476,7 @@ class Mtext(Text):
 		else:spacingWidth=self.height*self.spacingFactor
 		for text in texts:
 			while text:
-				result+='%s\n'%Text(text[:self.width],
+				result+='%s' %Text(text[:self.width],
 					point=(self.point[0]+x*spacingWidth,
 						   self.point[1]+y*spacingWidth,
 						   self.point[2]),
@@ -472,43 +492,46 @@ class Mtext(Text):
 
 #-----------------------------------------------
 ##class _Mtext(_Entity):
-##	"""Mtext not functioning for minimal dxf."""
-##	def __init__(self,text='',point=(0,0,0),attachment=1,
-##				 charWidth=None,charHeight=1,direction=1,height=100,rotation=0,
-##				 spacingStyle=None,spacingFactor=None,style=None,width=100,
-##				 xdirection=None,**common):
-##		_Entity.__init__(self,**common)
-##		self.text=text
-##		self.point=point
-##		self.attachment=attachment
-##		self.charWidth=charWidth
-##		self.charHeight=charHeight
-##		self.direction=direction
-##		self.height=height
-##		self.rotation=rotation
-##		self.spacingStyle=spacingStyle
-##		self.spacingFactor=spacingFactor
-##		self.style=style
-##		self.width=width
-##		self.xdirection=xdirection
-##	def __str__(self):
-##		input=self.text
-##		text=''
-##		while len(input)>250:
-##			text+='3\n%s\n'%input[:250]
-##			input=input[250:]
-##		text+='1\n%s\n'%input
-##		result= '0\nMTEXT\n%s\n%s\n40\n%s\n41\n%s\n71\n%s\n72\n%s%s\n43\n%s\n50\n%s\n'%\
-##				(self._common(),_point(self.point),self.charHeight,self.width,
-##				 self.attachment,self.direction,text,
-##				 self.height,
-##				 self.rotation)
-##		if self.style:result+='7\n%s\n'%self.style
-##		if self.xdirection:result+='%s\n'%_point(self.xdirection,1)
-##		if self.charWidth:result+='42\n%s\n'%self.charWidth
-##		if self.spacingStyle:result+='73\n%s\n'%self.spacingStyle
-##		if self.spacingFactor:result+='44\n%s\n'%self.spacingFactor
-##		return result
+	"""Mtext not functioning for minimal dxf."""
+	"""
+	def __init__(self,text='',point=(0,0,0),attachment=1,
+				 charWidth=None,charHeight=1,direction=1,height=100,rotation=0,
+				 spacingStyle=None,spacingFactor=None,style=None,width=100,
+				 xdirection=None,**common):
+		_Entity.__init__(self,**common)
+		self.text=text
+		self.point=point
+		self.attachment=attachment
+		self.charWidth=charWidth
+		self.charHeight=charHeight
+		self.direction=direction
+		self.height=height
+		self.rotation=rotation
+		self.spacingStyle=spacingStyle
+		self.spacingFactor=spacingFactor
+		self.style=style
+		self.width=width
+		self.xdirection=xdirection
+	def __str__(self):
+		input=self.text
+		text=''
+		while len(input)>250:
+			text+='3\n%s\n'%input[:250]
+			input=input[250:]
+		text+='1\n%s\n'%input
+		result= '0\nMTEXT\n%s\n%s\n40\n%s\n41\n%s\n71\n%s\n72\n%s%s\n43\n%s\n50\n%s\n'%\
+				(self._common(),_point(self.point),self.charHeight,self.width,
+				 self.attachment,self.direction,text,
+				 self.height,
+				 self.rotation)
+		if self.style:result+='7\n%s\n'%self.style
+		if self.xdirection:result+='%s\n'%_point(self.xdirection,1)
+		if self.charWidth:result+='42\n%s\n'%self.charWidth
+		if self.spacingStyle:result+='73\n%s\n'%self.spacingStyle
+		if self.spacingFactor:result+='44\n%s\n'%self.spacingFactor
+		return result
+	"""
+
 
 #---tables ---------------------------------------------------
 #-----------------------------------------------
@@ -591,11 +614,11 @@ class VPort(_Call):
 				target=(0.0,0.0,0.0),
 				height=1.0,
 				ratio=1.0,
-				lens=50,
-				frontClipping=0,
-				backClipping=0,
-				snap_rotation=0,
-				twist=0,
+				lens=50.0,
+				frontClipping=0.0,
+				backClipping=0.0,
+				snap_rotation=0.0,
+				twist=0.0,
 				mode=0,
 				circle_zoom=100,
 				fast_zoom=1,
@@ -669,15 +692,15 @@ class VPort(_Call):
 #-----------------------------------------------
 class View(_Call):
 	def __init__(self,name,flag=0,
-			width=1,
-			height=1,
+			width=1.0,
+			height=1.0,
 			center=(0.5,0.5),
-			direction=(0,0,1),
-			target=(0,0,0),
-			lens=50,
-			frontClipping=0,
-			backClipping=0,
-			twist=0,mode=0
+			direction=(0.0,0.0,1.0),
+			target=(0.0,0.0,0.0),
+			lens=50.0,
+			frontClipping=0.0,
+			backClipping=0.0,
+			twist=0.0,mode=0
 			):
 		self.name=name
 		self.flag=flag
@@ -739,10 +762,11 @@ class Drawing(_Collection):
 		self.vports=copy.copy(vports)
 		self.blocks=copy.copy(blocks)
 		self.fileName=fileName
+		#print 'deb: blocks=',blocks #----------
 		#private
 		#self.acadver='9\n$ACADVER\n1\nAC1006\n'
 		self.acadver='  9\n$ACADVER\n  1\nAC1009\n'
-		"""DXF AutoCAD-Release format codes
+		"""DXF AutoCAD-Release format codes:
 		AC1021  2008, 2007 
 		AC1018  2006, 2005, 2004 
 		AC1015  2002, 2000i, 2000 
@@ -787,22 +811,44 @@ class Drawing(_Collection):
 				self._table('view',[str(x) for x in self.views]),
 		]
 		tables=self._section('tables',tables)
-
 		blocks=self._section('blocks',[str(x) for x in self.blocks])
-
 		entities=self._section('entities',[str(x) for x in self.entities])
-
 		all=''.join([header,tables,blocks,entities,'  0\nEOF\n'])
 		return all
+		
+	def _write_section(self,file,name,data):
+		file.write('  0\nSECTION\n  2\n%s\n'%name.upper())
+		for x in data:
+			file.write(str(x))
+		file.write('  0\nENDSEC\n')
 
-	def saveas(self,fileName):
+	def saveas(self,fileName,buffer=0):
+		"""Writes DXF file. Needs target file name. If optional parameter buffer>0, then switch to old behavior: store entire output string in RAM.
+		"""
 		self.fileName=fileName
-		self.save()
+		if buffer: self.save()
+		else: self.export()
 
 	def save(self):
-		test=open(self.fileName,'w')
-		test.write(str(self))
-		test.close()
+		outfile=open(self.fileName,'w')
+		outfile.write(str(self))
+		outfile.close()
+
+	def export(self):
+		outfile=open(self.fileName,'w')
+		header=[self.acadver]+[self._point(attr,getattr(self,attr))+'\n' for attr in _HEADER_POINTS]
+		self._write_section(outfile,'header',header)
+		tables=[self._table('vport',[str(x) for x in self.vports]),
+			self._table('ltype',[str(x) for x in self.linetypes]),
+			self._table('layer',[str(x) for x in self.layers]),
+			self._table('style',[str(x) for x in self.styles]),
+			self._table('view',[str(x) for x in self.views]),
+			]
+		self._write_section(outfile,'tables',tables)
+		self._write_section(outfile,'blocks',self.blocks)
+		self._write_section(outfile,'entities',self.entities)
+		outfile.write('  0\nEOF\n')
+		outfile.close()
 
 
 #---extras
@@ -836,11 +882,12 @@ class LineList(_Entity):
 		self.closed=closed
 		self.points=copy.copy(points)
 	def __str__(self):
-		if self.closed:points=self.points+[self.points[0]]
+		if self.closed:
+			points=self.points+[self.points[0]]
 		else: points=self.points
 		result=''
 		for i in range(len(points)-1):
-			result+= Line(points=[points[i],points[i+1]],parent=self)
+			result+= Line(points=[points[i][0],points[i+1][0]],parent=self)
 		return result[1:]
 
 #-----------------------------------------------------
