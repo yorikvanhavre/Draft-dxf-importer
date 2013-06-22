@@ -407,6 +407,22 @@ class Solid(_Entity):
 
 
 #-----------------------------------------------
+class Dimension(_Entity):
+	"""Basic dimension entity"""
+	def __init__(self,point,start,end,**common):
+		_Entity.__init__(self,**common)
+		self.points=[point,start,end]
+	def __str__(self):
+		result = '  0\nDIMENSION\n%s' %(self._common())
+		result+=' 3\nStandard\n'
+		result+=' 70\n1\n'
+		result+='%s\n' %_point(self.points[0])
+		result+='%s\n' %_point(self.points[1],3)
+		result+='%s\n' %_point(self.points[2],4)
+		print result
+		return result
+
+#-----------------------------------------------
 class Text(_Entity):
 	"""Single text line."""
 	def __init__(self,text='',point=(0,0,0),alignment=None,
