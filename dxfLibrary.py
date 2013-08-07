@@ -87,6 +87,8 @@ try:
 except:
 	copy = None
 
+import math
+
 ####1) Private (only for developpers)
 _HEADER_POINTS=['insbase','extmin','extmax']
 
@@ -231,6 +233,26 @@ TOP = 3
 
 ####3) Classes
 #---entitities -----------------------------------------------
+
+#--------------------------
+class Ellipse(_Entity):
+	"""Ellipse"""
+	def __init__(self,center=(0,0,0),majorAxis=(1,0,0),
+				 normalAxis=(0,0,1),minorAxisRatio=0.5,startParameter=0.0,
+				 endParameter=2*math.pi,**common):
+		_Entity.__init__(self,**common)
+		self.center=center
+		self.majorAxis=majorAxis
+		self.normalAxis=normalAxis
+		self.minorAxisRatio=minorAxisRatio
+		self.startParameter=startParameter
+		self.endParameter=endParameter
+	def __str__(self):
+		return '  0\nELLIPSE\n%s%s\n%s\n%s\n 40\n%s\n 41\n%s\n 42\n%s\n'%\
+			   (self._common(),_point(self.center),_point(self.majorAxis,1),
+				_point(self.normalAxis,200),self.minorAxisRatio,
+				self.startParameter,self.endParameter)
+
 #--------------------------
 class Arc(_Entity):
 	"""Arc, angles in degrees."""
@@ -884,6 +906,7 @@ def test():
 	#d.append(Rectangle(point=(2,2,2),width=4,height=3,color=6,solid=Solid(color=2)))
 	d.append(Solid(points=[(4,4,0),(5,4,0),(7,8,0),(9,9,0)],color=3))
 	#d.append(PolyLine(points=[(1,1,1),(2,1,1),(2,2,1),(1,2,1)],flag=1,color=1))
+	d.append(Ellipse(center=(1,1,0),majorAxis=(2,2,0),minorAxisRatio=0.5))
 
 	#d.saveas('c:\\test.dxf')
 	d.saveas('test.dxf')
