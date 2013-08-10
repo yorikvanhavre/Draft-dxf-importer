@@ -901,7 +901,10 @@ class Block:
         self.data = obj.data[:]
         
         # required data
-        self.flags = obj.get_type(70)[0]
+        if obj.get_type(70):
+            self.flags = obj.get_type(70)[0]
+        else:
+            self.flags = 0
         self.entities = Object('block_contents')
         self.entities.data = objectify([ent for ent in obj.data if type(ent) != list])
         
