@@ -23,6 +23,8 @@ TODO:
 - add user preset for floating point precision (3-16?)
 
 History
+v1.35 - 2013.11.10 by Yorik
+ - default layer is now 0
 v1.34 - 2013.11.7 by Keith Sloan
  - add LwPolyLine support
 v1.33 - 2009.06.16 by migius
@@ -602,7 +604,7 @@ class Block(_Collection):
 #-----------------------------------------------
 class Layer(_Call):
 	"""Layer"""
-	def __init__(self,name='pydxf',color=7,lineType='continuous',flag=64):
+	def __init__(self,name='0',color=7,lineType='continuous',flag=64):
 		self.name=name
 		self.color=color
 		self.lineType=lineType
