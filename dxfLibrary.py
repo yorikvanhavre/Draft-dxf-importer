@@ -1,6 +1,6 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.34 - 2013.11.07"
+__version__ = "v1.35 - 2013.11.10"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius)"
 __license__ = "GPL"
 __url__ = "http://wiki.blender.org/index.php/Scripts/Manual/Export/autodesk_dxf"
