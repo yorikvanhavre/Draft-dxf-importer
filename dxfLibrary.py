@@ -1,6 +1,6 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.33 - 2009.06.16"
+__version__ = "v1.35 - 2013.11.10"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius)"
 __license__ = "GPL"
 __url__ = "http://wiki.blender.org/index.php/Scripts/Manual/Export/autodesk_dxf"
@@ -23,6 +23,10 @@ TODO:
 - add user preset for floating point precision (3-16?)
 
 History
+v1.35 - 2013.11.10 by Yorik
+ - default layer is now 0
+v1.34 - 2013.11.7 by Keith Sloan
+ - add LwPolyLine support
 v1.33 - 2009.06.16 by migius
  - modif _point(): converts all coords to floats
  - modif LineType class: implement elements
@@ -405,6 +409,39 @@ class PolyLine(_Entity):
 		result+='  8\n%s\n' %self.layer
 		return result
 
+class LwPolyLine(_Entity):
+	def __init__(self,points,org_point=[0,0],flag=0,width=None,**common):
+		#width = number, or width = list [width_start=None, width_end=None]
+		#for 2d-polyline: points = [ [x, y, z, width_start=None, width_end=None, bulge=0 or None], ...]
+		_Entity.__init__(self,**common)
+		self.points=points
+		self.org_point=org_point
+		self.flag=flag
+		self.width= None # dummy value
+		
+	def __str__(self):
+		result= '  0\nLWPOLYLINE\n%s ' %(self._common())
+	        result+='  8\n%s\n' %self.layer
+                result+='100\nAcDbPolyline\n'
+		result+=' 90\n%s\n' % len(self.points)
+	        result+=' 70\n%s\n' %(self.flag)
+		result+='%s\n' %_point(self.org_point)
+		if self.width!=None:
+                    result+=' 40\n%s\n 41\n%s\n' %(self.width[0],self.width[1])
+		for point in self.points:
+                    result+='%s\n' %_point(point[0:2])
+		    if len(point)>4:
+		        width1, width2 = point[3], point[4]
+			if width1!=None: result+=' 40\n%s\n' %width1
+			if width2!=None: result+=' 41\n%s\n' %width2
+		    if len(point)==6:
+			bulge = point[5]
+			if bulge: 
+                           result+=' 42\n%s\n' %bulge
+                return result
+
+
+
 #-----------------------------------------------
 class Point(_Entity):
 	"""Point."""
@@ -567,7 +604,7 @@ class Block(_Collection):
 #-----------------------------------------------
 class Layer(_Call):
 	"""Layer"""
-	def __init__(self,name='pydxf',color=7,lineType='continuous',flag=64):
+	def __init__(self,name='0',color=7,lineType='continuous',flag=64):
 		self.name=name
 		self.color=color
 		self.lineType=lineType
@@ -916,4 +953,4 @@ if __name__=='__main__':
 	if not copy:
 		Draw.PupMenu('Error%t|This script requires a full python install')
 	else: test()
-	
+
