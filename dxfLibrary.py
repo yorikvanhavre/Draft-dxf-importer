@@ -1,6 +1,6 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.35 - 2013.11.10"
+__version__ = "v1.36 - 2013.12.21"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius)"
 __license__ = "GPL"
 __url__ = "http://wiki.blender.org/index.php/Scripts/Manual/Export/autodesk_dxf"
@@ -23,6 +23,8 @@ TODO:
 - add user preset for floating point precision (3-16?)
 
 History
+v1.36 - 2013.12.21 by Yorik
+ - little fix to importer to support layers with no color flag
 v1.35 - 2013.11.10 by Yorik
  - default layer is now 0
 v1.34 - 2013.11.7 by Keith Sloan

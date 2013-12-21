@@ -129,7 +129,11 @@ class Layer:
         self.data = obj.data[:]
         
         self.name = obj.get_type(2)[0]
-        self.color = obj.get_type(62)[0]
+        try:
+            self.color = obj.get_type(62)[0]
+        except:
+            # fix for badly formatted layers that have no color!! bad, bad layer!
+            self.color = 7
         self.flags = obj.get_type(70)[0]
         self.frozen = self.flags&1
         
