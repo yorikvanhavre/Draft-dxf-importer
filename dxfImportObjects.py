@@ -1275,9 +1275,12 @@ def get_layer(data):
     """
     value = None
     for i, item in enumerate(data):
-        if item[0] == 8:
-            value = item[1]
-            break
+        if isinstance(item,list):
+            if item[0] == 8:
+                value = item[1]
+                break
+    if value == None:
+        return [8,'0'], ['0'], 0
     return item, value, i
 
 

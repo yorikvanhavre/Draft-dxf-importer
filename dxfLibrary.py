@@ -1,9 +1,9 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.36 - 2013.12.21"
-__author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius)"
+__version__ = "v1.37 - 2014.06.21"
+__author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius), Yorik van Havre"
 __license__ = "GPL"
-__url__ = "http://wiki.blender.org/index.php/Scripts/Manual/Export/autodesk_dxf"
+__url__ = "http://github.com/yorikvanhavre/Draft-dxf-importer"
 __bpydoc__ ="""The library to export geometry data to DXF format r12 version.
 
 Copyright %s
@@ -23,6 +23,8 @@ TODO:
 - add user preset for floating point precision (3-16?)
 
 History
+v1.37 - 2014.06.21 by Yorik
+ - little fix to importer to support objects with no layer information (default to 0)
 v1.36 - 2013.12.21 by Yorik
  - little fix to importer to support layers with no color flag
 v1.35 - 2013.11.10 by Yorik
