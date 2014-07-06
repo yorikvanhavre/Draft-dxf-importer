@@ -109,7 +109,7 @@ def get_name(data):
 	(the data_item can be used to remove the entry from the object data).  Be sure to check
 	name not None before using the returned values!
 	"""
-	value = None
+	item, value = None, None
 	for item in data:
 		if item[0] == 2:
 			value = item[1]
@@ -121,7 +121,7 @@ def get_layer(data):
 
 	Returns (entry, layer_name) where entry is the data item that provided the layer name.
 	"""
-	value = None
+	item, value = None, None
 	for item in data:
 		if item[0] == 8:
 			value = item[1]
