@@ -26,4 +26,4 @@ If you use another version of FreeCAD, for example a development version or an o
     import importDXF
     print importDXF.CURRENTDXFLIB
 
-Then, by using the "branch" button at he top of this page, you can change the version that you will be downloading. Or, more simply, you can use the links provided in the first paragraph of this text.
+Then, by using the "branch" button at he top of this page, you can change the version that you will be downloading. Or, more simply, you can use the links provided above.
