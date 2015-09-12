@@ -4,7 +4,7 @@ As a result, to avoid further problems, we decided to make FreeCAD LGPL-only, an
 
 The files included here don't need to be downoaded manually. On first use of the dxf importer or exporter, these files will be downloaded and placed in the appropriate directory, and normally the user would never need to worry about this anymore.
 
-If for some reason the automatic download failed, you can always download these files manually and place them into your FreeCAD user folder ($HOME/.FreeCAD on linuxand mac, C:\Users\yourUser\Application Data\FreeCAD on windows). After that dxf import/export should work normally.
+If for some reason the automatic download failed, you can always download these files manually and place them into your FreeCAD user folder ($HOME/.FreeCAD on linuxand mac, C:\Users\yourUser\Application Data\FreeCAD on windows before windows7, C:\Users\yoruUser\AppData\Roaming\FreeCAD on windows 7 and later). After that dxf import/export should work normally.
 
 ## DOWNLOAD
 
