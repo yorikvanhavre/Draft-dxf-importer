@@ -1,3 +1,5 @@
+**Note: The files in this repository are not needed anymore when using the built-in DXF importer (default since FreeCAD 0.16). They are still needed if you wish to use the legacy python importer (settable in Edit-> Preferences -> Import/Export -> DXF) or if you wish to export directly from the 3D model (exporting a Drawing page to DXF also doesn't require these files)**
+
 This repository contains files needed to add DXF support (import-export) to [FreeCAD](http://www.freecadweb.org). They cannot be included directly in the FreeCAD source code anymore, because they are licensed under the GPL, and for stupid reasons, the OpenCasCade kernel used in FreeCAD prevents using GPL code in FreeCAD. 
 
 As a result, to avoid further problems, we decided to make FreeCAD LGPL-only, and remove all non-LGPL bits from its source code.
