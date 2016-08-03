@@ -10,8 +10,9 @@ If for some reason the automatic download failed, you can always download these 
 
 * For FreeCAD 0.14, you need the dxf lib 1.36. Download it [here](https://github.com/yorikvanhavre/Draft-dxf-importer/archive/1.36.zip).
 * For FreeCAD 0.15, you need the dxf lib 1.38. Download it [here](https://github.com/yorikvanhavre/Draft-dxf-importer/archive/1.38.zip).
+* For FreeCAD 0.16 you need the dxf lib 1.39. Download it [here](https://github.com/yorikvanhavre/Draft-dxf-importer/archive/1.39.zip)
 
-The "Download ZIP" button on the right of this page always gives you the version needed by the current stalbe release of FreeCAD (currenntly 0.14)
+The "Download ZIP" button on the right of this page always gives you the version needed by the current stable release of FreeCAD (currently 1.39 for version 0.16)
 
 ## WARNING
 
