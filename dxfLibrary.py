@@ -456,7 +456,7 @@ class LwPolyLine(_Entity):
 				bulge = point[5]
 				if bulge: 
 					result+=' 42\n%s\n' %bulge
-			return result
+		return result
 
 
 
