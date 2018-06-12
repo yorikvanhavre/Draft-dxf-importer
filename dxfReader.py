@@ -85,11 +85,11 @@ class StateMachine:
 
 	def run(self, cargo=None):
 		if not self.startState:
-			raise InitializationError,\
-				  "must call .set_start() before .run()"
+			raise InitializationError(
+				  "must call .set_start() before .run()")
 		if not self.endStates:
-			raise InitializationError, \
-				  "at least one state must be an end_state"
+			raise InitializationError(
+				  "at least one state must be an end_state")
 		handler = self.startState
 		while 1:
 			(newState, cargo) = handler(cargo)
@@ -98,7 +98,7 @@ class StateMachine:
 				return newState(cargo)
 				#break
 			elif newState not in self.handlers:
-				raise RuntimeError, "Invalid target %s" % newState
+				raise RuntimeError("Invalid target %s" % newState)
 			else:
 				handler = newState
 
@@ -213,7 +213,7 @@ def handleTable(table, infile):
 	while 1:
 		obj = handleObject(infile)
 		if obj.type == 'table':
-			print "Warning: previous table not closed!"
+			print("Warning: previous table not closed!")
 			return table
 		elif obj.type == 'endtab':
 			return table # this means we are done with the table
@@ -234,7 +234,7 @@ def handleBlock(block, infile):
 	while 1:
 		obj = handleObject(infile)
 		if obj.type == 'block':
-			print "Warning: previous block not closed!"
+			print("Warning: previous block not closed!")
 			return block
 		elif obj.type == 'endblk':
 			return block # this means we are done with the table
@@ -283,7 +283,7 @@ def start_section(cargo):
 				while 1: # no way out unless we find an end section or a new section
 					obj = handleObject(infile)
 					if obj == 'section': # shouldn't happen
-						print "Warning: failed to close previous section!"
+						print("Warning: failed to close previous section!")
 						return end_section, (infile, drawing)
 					elif obj == 'endsec': # This section is over, look for the next
 						drawing.data.append(section)
@@ -327,8 +327,8 @@ def error(cargo):
 	infile = cargo[0]
 	err = cargo[1]
 	infile.close()
-	print "There has been an error:"
-	print err
+	print("There has been an error:")
+	print(err)
 	return False
 
 def readDXF(filename):
@@ -381,4 +381,4 @@ if __name__ == "__main__":
 	filename = r".\examples\block-test.dxf"
 	drawing = readDXF(filename)
 	for item in drawing.entities.data:
-		print item
+		print(item)
