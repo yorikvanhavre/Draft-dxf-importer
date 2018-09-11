@@ -138,10 +138,14 @@ def convert(code, value):
 		hex = 105, 310-379, 390-399
 		strings = 0-9, 100, 102, 300-309, 410-419, 430-439, 470-479, 999, 1000-1009
 	"""
+	import sys
 	if 59 < code < 80 or 169 < code < 180 or 269 < code < 290 or 369 < code < 390 or 399 < code < 410 or 1059 < code < 1071:
 		value = int(float(value))
 	elif 89 < code < 100 or 419 < code < 430 or 439 < code < 460 or code == 1071:
-		value = long(float(value))
+		if (sys.version_info > (3, 0)):  #py3
+			value = int(float(value))
+		else:
+			value = long(float(value))
 	elif 9 < code < 60 or 109 < code < 150 or 209 < code < 240 or 459 < code < 470 or 1009 < code < 1060:
 		value = float(value)
 	elif code == 105 or 309 < code < 380 or 389 < code < 400:
