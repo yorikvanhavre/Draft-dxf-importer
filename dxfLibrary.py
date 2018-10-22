@@ -897,7 +897,7 @@ class Drawing(_Collection):
 		for x in data:
 			if not isinstance(x,str):
 				x = x.__str__()
-			file.write(str(x.encode("iso-8859-1"))) # dxf R12 files are expected to be in that encoding
+			file.write(x.encode("iso-8859-1").decode("iso-8859-1")) # dxf R12 files are expected to be in that encoding
 		file.write('  0\nENDSEC\n')
 
 	def saveas(self,fileName,buffer=0):

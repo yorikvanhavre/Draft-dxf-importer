@@ -150,7 +150,7 @@ class Line:
     def __init__(self, obj):
         """Expects an entity object of type line as input."""
         if not obj.type == 'line':
-            raise TypeError, "Wrong type %s for line object!" %obj.type
+            raise TypeError("Wrong type %s for line object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -210,7 +210,7 @@ class LWpolyline:
     def __init__(self, obj):
         """Expects an entity object of type lwpolyline as input."""
         if not obj.type == 'lwpolyline':
-            raise TypeError, "Wrong type %s for polyline object!" %obj.type
+            raise TypeError("Wrong type %s for polyline object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -314,7 +314,7 @@ class Polyline:
     def __init__(self, obj):
         """Expects an entity object of type polyline as input."""
         if not obj.type == 'polyline':
-            raise TypeError, "Wrong type %s for polyline object!" %obj.type
+            raise TypeError("Wrong type %s for polyline object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         self.points = []
@@ -391,7 +391,7 @@ class Vertex(object):
         
         if obj is not None:
             if not obj.type == 'vertex':
-                raise TypeError, "Wrong type %s for vertex object!" %obj.type
+                raise TypeError("Wrong type %s for vertex object!" %obj.type)
             self.type = obj.type
             self.data = obj.data[:]
             
@@ -485,7 +485,7 @@ class Text:
     def __init__(self, obj):
         """Expects an entity object of type text as input."""
         if not obj.type == 'text':
-            raise TypeError, "Wrong type %s for text object!" %obj.type
+            raise TypeError("Wrong type %s for text object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -602,7 +602,7 @@ class Mtext:
     def __init__(self, obj):
         """Expects an entity object of type mtext as input."""
         if not obj.type == 'mtext':
-            raise TypeError, "Wrong type %s for mtext object!" %obj.type
+            raise TypeError("Wrong type %s for mtext object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -662,7 +662,7 @@ class Mtext:
             elif item[0] == 3: # There may be any number of extra strings (in order)
                 secondary.append(item[1])
         if not primary:
-            #raise ValueError, "Empty Mtext Object!"
+            #raise ValueError("Empty Mtext Object!")
             string = "Empty Mtext Object!"
         if not secondary:
             string = primary.replace(r'\P', '\n')
@@ -715,7 +715,7 @@ class Circle:
     def __init__(self, obj):
         """Expects an entity object of type circle as input."""
         if not obj.type == 'circle':
-            raise TypeError, "Wrong type %s for circle object!" %obj.type
+            raise TypeError("Wrong type %s for circle object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -788,7 +788,7 @@ class Arc:
     def __init__(self, obj):
         """Expects an entity object of type arc as input."""
         if not obj.type == 'arc':
-            raise TypeError, "Wrong type %s for arc object!" %obj.type
+            raise TypeError("Wrong type %s for arc object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -863,7 +863,7 @@ class BlockRecord:
     def __init__(self, obj):
         """Expects an entity object of type block_record as input."""
         if not obj.type == 'block_record':
-            raise TypeError, "Wrong type %s for block_record object!" %obj.type
+            raise TypeError("Wrong type %s for block_record object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -900,7 +900,7 @@ class Block:
     def __init__(self, obj):
         """Expects an entity object of type block as input."""
         if not obj.type == 'block':
-            raise TypeError, "Wrong type %s for block object!" %obj.type
+            raise TypeError("Wrong type %s for block object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -971,7 +971,7 @@ class Insert:
     def __init__(self, obj):
         """Expects an entity object of type insert as input."""
         if not obj.type == 'insert':
-            raise TypeError, "Wrong type %s for insert object!" %obj.type
+            raise TypeError("Wrong type %s for insert object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -1087,7 +1087,7 @@ class Ellipse:
     def __init__(self, obj):
         """Expects an entity object of type ellipse as input."""
         if not obj.type == 'ellipse':
-            raise TypeError, "Wrong type %s for ellipse object!" %obj.type
+            raise TypeError("Wrong type %s for ellipse object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -1180,7 +1180,7 @@ class Face:
     def __init__(self, obj):
         """Expects an entity object of type 3dfaceplot as input."""
         if not obj.type == '3dface':
-            raise TypeError, "Wrong type %s for 3dface object!" %obj.type
+            raise TypeError("Wrong type %s for 3dface object!" %obj.type)
         self.type = obj.type
         self.data = obj.data[:]
         
@@ -1327,7 +1327,7 @@ def objectify(data):
                 elif item.type == 'seqend':
                     break
                 else:
-                    print "Error: non-vertex found before seqend!"
+                    print("Error: non-vertex found before seqend!")
                     index -= 1
                     break
             objects.append(pline)
@@ -1337,4 +1337,4 @@ def objectify(data):
         index += 1
     return objects    
 if __name__ == "__main__":
-    print "No example yet!"
+    print("No example yet!")
