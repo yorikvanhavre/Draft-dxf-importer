@@ -1,6 +1,6 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.39 - 2015.09.12"
+__version__ = "v1.40 - 2015.09.12"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius), Yorik van Havre"
 __license__ = "GPL"
 __url__ = "http://github.com/yorikvanhavre/Draft-dxf-importer"
@@ -16,6 +16,8 @@ See the blender wiki for documentation.
 Dedicated thread on BlenderArtists: http://blenderartists.org/forum/showthread.php?t=136439
 
 History
+v1.40 - 2018.10.22 by Yorik and others
+    - Fixed python3 support
 v1.39 - 2015.09.12 by Yorik
     - Fixed export of utf8 strings (DXF R12 expects iso-8859-1 encoding)
 v1.38 - 2014.07.06 by Yorik
