@@ -86,10 +86,10 @@ class StateMachine:
 	def run(self, cargo=None):
 		if not self.startState:
 			raise InitializationError(
-				  "must call .set_start() before .run()")
+				"must call .set_start() before .run()")
 		if not self.endStates:
 			raise InitializationError(
-				  "at least one state must be an end_state")
+				"at least one state must be an end_state")
 		handler = self.startState
 		while 1:
 			(newState, cargo) = handler(cargo)
