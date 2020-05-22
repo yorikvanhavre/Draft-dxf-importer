@@ -355,7 +355,7 @@ def readDXF(filename):
 	where foo data is a list of sub-objects.  True object data
 	is of the form [code, data].
 """
-	infile = open(filename)
+	infile = open(filename, encoding='utf-8')
 
 	sm = StateMachine()
 	sm.add_state(error, True)
