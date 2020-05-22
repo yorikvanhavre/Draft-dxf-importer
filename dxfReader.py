@@ -354,8 +354,12 @@ def readDXF(filename):
 			object data
 	where foo data is a list of sub-objects.  True object data
 	is of the form [code, data].
-"""
-	infile = open(filename)
+"""	
+	import sys
+	if (sys.version_info > (3, 0)):  #py3
+		infile = open(filename, encoding='utf-8')
+	else:
+		infile = open(filename)
 
 	sm = StateMachine()
 	sm.add_state(error, True)
