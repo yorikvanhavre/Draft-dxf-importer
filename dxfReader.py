@@ -28,6 +28,8 @@
 # --------------------------------------------------------------------------
 
 
+import sys
+import re
 from dxfImportObjects import *
 
 class Object:
@@ -258,22 +260,24 @@ states:
 """
 
 def start(cargo):
-	"""Expects the infile as cargo, initializes the cargo."""
+	"""Expects (infile, acadVersion) as cargo, initializes the drawing."""
 	#print "Entering start state!"
-	infile = cargo
+	infile = cargo[0]
+	acadVersion = cargo[1]
 	drawing = Object('drawing')
 	section = findObject(infile, 'section')
 	if section:
-		return start_section, (infile, drawing, section)
+		return start_section, (infile, drawing, section, acadVersion)
 	else:
 		return error, (infile, "Failed to find any sections!")
 
 def start_section(cargo):
-	"""Expects [infile, drawing, section] as cargo, builds a nested section object."""
+	"""Expects (infile, drawing, section, acadVersion) as cargo, builds a nested section object."""
 	#print "Entering start_section state!"
 	infile = cargo[0]
 	drawing = cargo[1]
 	section = cargo[2]
+	acadVersion = cargo[3]
 	# read each line, if it is an object declaration go to object mode
 	# otherwise create a [index, data] pair and add it to the sections data.
 	done = False
@@ -288,10 +292,10 @@ def start_section(cargo):
 					obj = handleObject(infile)
 					if obj == 'section': # shouldn't happen
 						print("Warning: failed to close previous section!")
-						return end_section, (infile, drawing)
+						return end_section, (infile, drawing, acadVersion)
 					elif obj == 'endsec': # This section is over, look for the next
 						drawing.data.append(section)
-						return end_section, (infile, drawing)
+						return end_section, (infile, drawing, acadVersion)
 					elif obj.type == 'table': # tables are collections of data
 						obj = handleTable(obj, infile) # we need to find all there contents
 						section.data.append(obj) # before moving on
@@ -307,13 +311,57 @@ def start_section(cargo):
 			section.data.append(data)
 			data = []
 def end_section(cargo):
-	"""Expects (infile, drawing) as cargo, searches for next section."""
+	"""Expects (infile, drawing, acadVersion) as cargo, searches for next section."""
 	#print "Entering end_section state!"
 	infile = cargo[0]
 	drawing = cargo[1]
+	acadVersion = cargo[2]
+	if sys.version_info >= (3, 0) and not acadVersion:
+		headerSection = drawing.data[0]
+		if get_name(headerSection.data)[1] != 'HEADER':
+			return error, (infile, "First section is not HEADER")
+		DXFcodePage, varName = None, None
+		for item in headerSection.data:
+			if item[0] == 9:
+				if item[1] == '$ACADVER' or item[1] == '$DWGCODEPAGE':
+					varName = item[1]
+				else:
+					varName = None
+			elif varName and (item[0] == 1 or item[0] == 3):
+				varValue = convert(item[0], item[1])
+				if varName == '$ACADVER':
+					acadVersion = varValue
+				else:
+					DXFcodePage = varValue
+				varName = None
+			if acadVersion and DXFcodePage:
+				break
+		if not acadVersion:
+			return error, (infile, "Unable to identify DXF file version")
+		if acadVersion > 'AC1018':
+			DXFCodePage = 'utf-8'
+		elif DXFcodePage:
+			# The codepage name in the DXF file does not use the same convention as the python code page names
+			if DXFcodePage == 'ansi_936':
+				DXFcodePage = 'gbk'
+			else:
+				match = re.match('(?i)\Aansi_([0-9]+)\Z', DXFcodePage)
+				if match:
+					DXFcodePage = 'cp'+match.group(1)
+		if DXFcodePage:
+			# Restart with infile changed to the correct encoding. There is no way of changing existing infile
+			# without losing its current position so we must go back to 'start' state.
+			if sys.version_info >= (3, 7):
+				infile.seek(0)
+				infile.reconfigure(encoding=DXFcodePage)
+			else:
+				infile.close()
+				infile = open(filename, encoding=DXFcodePage)
+			return start, (infile, acadVersion)
+
 	section = findObject(infile, 'section')
 	if section:
-		return start_section, (infile, drawing, section)
+		return start_section, (infile, drawing, section, acadVersion)
 	else:
 		return end, (infile, drawing)
 
@@ -322,8 +370,7 @@ def end(cargo):
 	#print "Entering end state!"
 	infile = cargo[0]
 	drawing = cargo[1]
-	#infile.close()
-	return drawing
+	return cargo
 
 def error(cargo):
 	"""Expects a (infile, string) as cargo, called when there is an error during processing."""
@@ -355,9 +402,8 @@ def readDXF(filename):
 	where foo data is a list of sub-objects.  True object data
 	is of the form [code, data].
 """	
-	import sys
 	if (sys.version_info > (3, 0)):  #py3
-		infile = open(filename, encoding='utf-8')
+		infile = open(filename, encoding=None)
 	else:
 		infile = open(filename)
 
@@ -369,7 +415,7 @@ def readDXF(filename):
 	sm.add_state(start)
 	sm.set_start(start)
 	try:
-		drawing = sm.run(infile)
+		(infile, drawing) = sm.run((infile, None))
 		if drawing:
 			drawing.name = filename
 			for obj in drawing.data:
@@ -383,6 +429,8 @@ def readDXF(filename):
 					obj.data = objectify(obj.data)
 				#print obj.name
 	finally:
+		# if an exception occurs in sm.run after it has reopened infile, this will close a file
+		# already closed, and the open file will be closed when garbage-collected.
 		infile.close()
 	return drawing
 if __name__ == "__main__":
