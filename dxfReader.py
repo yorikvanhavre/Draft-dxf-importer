@@ -144,10 +144,7 @@ def convert(code, value):
 	if 59 < code < 80 or 169 < code < 180 or 269 < code < 290 or 369 < code < 390 or 399 < code < 410 or 1059 < code < 1071:
 		value = int(float(value))
 	elif 89 < code < 100 or 419 < code < 430 or 439 < code < 460 or code == 1071:
-		if (sys.version_info > (3, 0)):  #py3
-			value = int(float(value))
-		else:
-			value = long(float(value))
+		value = int(float(value))
 	elif 9 < code < 60 or 109 < code < 150 or 209 < code < 240 or 459 < code < 470 or 1009 < code < 1060:
 		value = float(value)
 	elif code == 105 or 309 < code < 380 or 389 < code < 400:
@@ -316,7 +313,7 @@ def end_section(cargo):
 	infile = cargo[0]
 	drawing = cargo[1]
 	acadVersion = cargo[2]
-	if sys.version_info >= (3, 0) and not acadVersion:
+	if not acadVersion:
 		headerSection = drawing.data[0]
 		if get_name(headerSection.data)[1] != 'HEADER':
 			return error, (infile, "First section is not HEADER")
@@ -402,10 +399,7 @@ def readDXF(filename):
 	where foo data is a list of sub-objects.  True object data
 	is of the form [code, data].
 """	
-	if (sys.version_info > (3, 0)):  #py3
-		infile = open(filename, encoding=None)
-	else:
-		infile = open(filename)
+	infile = open(filename, encoding=None)
 
 	sm = StateMachine()
 	sm.add_state(error, True)
