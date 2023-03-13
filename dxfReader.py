@@ -333,7 +333,7 @@ def end_section(infile, drawing, acadVersion):
 			if DXFcodePage == 'ansi_936':
 				DXFcodePage = 'gbk'
 			else:
-				match = re.match('(?i)\Aansi_([0-9]+)\Z', DXFcodePage)
+				match = re.match('(?i)\\Aansi_([0-9]+)\\Z', DXFcodePage)
 				if match:
 					DXFcodePage = 'cp'+match.group(1)
 		if DXFcodePage:
