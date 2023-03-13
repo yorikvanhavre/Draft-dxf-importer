@@ -67,7 +67,7 @@ class Object:
 class InitializationError(Exception): pass
 
 class StateMachine:
-	"""(finite) State Machine from the great David Mertz's great Charming Python article."""
+	"""(finite) State Machine based on one from the great David Mertz's great Charming Python article."""
 
 	def __init__(self):
 		self.handlers = []
@@ -94,10 +94,10 @@ class StateMachine:
 				"at least one state must be an end_state")
 		handler = self.startState
 		while 1:
-			(newState, cargo) = handler(cargo)
+			(newState, cargo) = handler(*cargo)
 			#print cargo
 			if newState in self.endStates:
-				return newState(cargo)
+				return newState(*cargo)
 				#break
 			elif newState not in self.handlers:
 				raise RuntimeError("Invalid target %s" % newState)
@@ -256,11 +256,9 @@ states:
  end - return results
 """
 
-def start(cargo):
-	"""Expects (infile, acadVersion) as cargo, initializes the drawing."""
+def start(infile, acadVersion):
+	"""Initializes the drawing."""
 	#print "Entering start state!"
-	infile = cargo[0]
-	acadVersion = cargo[1]
 	drawing = Object('drawing')
 	section = findObject(infile, 'section')
 	if section:
@@ -268,13 +266,9 @@ def start(cargo):
 	else:
 		return error, (infile, "Failed to find any sections!")
 
-def start_section(cargo):
-	"""Expects (infile, drawing, section, acadVersion) as cargo, builds a nested section object."""
+def start_section(infile, drawing, section, acadVersion):
+	"""Builds a nested section object."""
 	#print "Entering start_section state!"
-	infile = cargo[0]
-	drawing = cargo[1]
-	section = cargo[2]
-	acadVersion = cargo[3]
 	# read each line, if it is an object declaration go to object mode
 	# otherwise create a [index, data] pair and add it to the sections data.
 	done = False
@@ -307,12 +301,9 @@ def start_section(cargo):
 			data.append(convert(data[0], line.strip()))
 			section.data.append(data)
 			data = []
-def end_section(cargo):
-	"""Expects (infile, drawing, acadVersion) as cargo, searches for next section."""
+def end_section(infile, drawing, acadVersion):
+	"""Verifies if we have version info, searches for next section."""
 	#print "Entering end_section state!"
-	infile = cargo[0]
-	drawing = cargo[1]
-	acadVersion = cargo[2]
 	if not acadVersion:
 		headerSection = drawing.data[0]
 		if get_name(headerSection.data)[1] != 'HEADER':
@@ -362,18 +353,14 @@ def end_section(cargo):
 	else:
 		return end, (infile, drawing)
 
-def end(cargo):
-	"""Expects (infile, drawing) as cargo, called when eof has been reached."""
+def end(infile, drawing):
+	"""Called when eof has been reached."""
 	#print "Entering end state!"
-	infile = cargo[0]
-	drawing = cargo[1]
-	return cargo
+	return (infile, drawing)
 
-def error(cargo):
-	"""Expects a (infile, string) as cargo, called when there is an error during processing."""
+def error(infile, err):
+	"""Called when there is an error during processing."""
 	#print "Entering error state!"
-	infile = cargo[0]
-	err = cargo[1]
 	infile.close()
 	print("There has been an error:")
 	print(err)
