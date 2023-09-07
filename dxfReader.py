@@ -303,8 +303,11 @@ def start_section(infile, drawing, section, acadVersion):
 			data = []
 def end_section(infile, drawing, acadVersion):
 	"""Verifies if we have version info, searches for next section."""
-	#print "Entering end_section state!"
+	#print("Entering end_section state!")
+	#if acadVersion:  # DEBUG (pde)
+	#	print("Got $ACADVER: " + acadVersion)
 	if not acadVersion:
+		acadVersion='AC1021' # a sane pre-initialization for DXF files missing $ACADVER (pde)
 		headerSection = drawing.data[0]
 		if get_name(headerSection.data)[1] != 'HEADER':
 			return error, (infile, "First section is not HEADER")
@@ -319,23 +322,28 @@ def end_section(infile, drawing, acadVersion):
 				varValue = convert(item[0], item[1])
 				if varName == '$ACADVER':
 					acadVersion = varValue
+					#print("$ACADVER: " + acadVersion)  # DEBUG (pde)
 				else:
 					DXFcodePage = varValue
+					#print("CP: " + DXFcodePage)  # DEBUG (pde)
 				varName = None
 			if acadVersion and DXFcodePage:
 				break
 		if not acadVersion:
-			return error, (infile, "Unable to identify DXF file version")
+			return error, (infile, "Unable to identify DXF file version, missing $ACADVER in file!")  # Verbose error message (pde)
 		if acadVersion > 'AC1018':
 			DXFCodePage = 'utf-8'
+			#print("Set default CP UTF-8!")  # DEBUG (pde)
 		elif DXFcodePage:
 			# The codepage name in the DXF file does not use the same convention as the python code page names
-			if DXFcodePage == 'ansi_936':
+			if DXFcodePage.casefold() == 'ansi_936':  # Case insensitive check (pde)
 				DXFcodePage = 'gbk'
+				#print("Set CP GBK")  # DEBUG (pde)
 			else:
 				match = re.match('(?i)\\Aansi_([0-9]+)\\Z', DXFcodePage)
 				if match:
 					DXFcodePage = 'cp'+match.group(1)
+					#print("Set CP: " + DXFcodePage)  # DEBUG (pde)
 		if DXFcodePage:
 			# Restart with infile changed to the correct encoding. There is no way of changing existing infile
 			# without losing its current position so we must go back to 'start' state.
