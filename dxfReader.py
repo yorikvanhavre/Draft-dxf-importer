@@ -303,8 +303,9 @@ def start_section(infile, drawing, section, acadVersion):
 			data = []
 def end_section(infile, drawing, acadVersion):
 	"""Verifies if we have version info, searches for next section."""
-	#print "Entering end_section state!"
+	#print("Entering end_section state!")
 	if not acadVersion:
+		acadVersion='AC1021' # a sane pre-initialization for DXF files missing $ACADVER (pde)
 		headerSection = drawing.data[0]
 		if get_name(headerSection.data)[1] != 'HEADER':
 			return error, (infile, "First section is not HEADER")
@@ -325,12 +326,12 @@ def end_section(infile, drawing, acadVersion):
 			if acadVersion and DXFcodePage:
 				break
 		if not acadVersion:
-			return error, (infile, "Unable to identify DXF file version")
+			return error, (infile, "Unable to identify DXF file version, missing $ACADVER in file!")  # Verbose error message (pde)
 		if acadVersion > 'AC1018':
 			DXFCodePage = 'utf-8'
 		elif DXFcodePage:
 			# The codepage name in the DXF file does not use the same convention as the python code page names
-			if DXFcodePage == 'ansi_936':
+			if DXFcodePage.casefold() == 'ansi_936':  # Case insensitive check (pde)
 				DXFcodePage = 'gbk'
 			else:
 				match = re.match('(?i)\\Aansi_([0-9]+)\\Z', DXFcodePage)
