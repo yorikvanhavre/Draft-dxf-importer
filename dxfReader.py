@@ -328,7 +328,7 @@ def end_section(infile, drawing, acadVersion):
 		if not acadVersion:
 			return error, (infile, "Unable to identify DXF file version, missing $ACADVER in file!")  # Verbose error message (pde)
 		if acadVersion > 'AC1018':
-			DXFCodePage = 'utf-8'
+			DXFcodePage = 'utf-8'
 		elif DXFcodePage:
 			# The codepage name in the DXF file does not use the same convention as the python code page names
 			if DXFcodePage.casefold() == 'ansi_936':  # Case insensitive check (pde)
