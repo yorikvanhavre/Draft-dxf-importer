@@ -338,15 +338,18 @@ def end_section(infile, drawing, acadVersion):
 				if match:
 					DXFcodePage = 'cp'+match.group(1)
 		if DXFcodePage:
-			# Restart with infile changed to the correct encoding. There is no way of changing existing infile
-			# without losing its current position so we must go back to 'start' state.
-			if sys.version_info >= (3, 7):
-				infile.seek(0)
-				infile.reconfigure(encoding=DXFcodePage)
-			else:
-				infile.close()
-				infile = open(filename, encoding=DXFcodePage)
-			return start, (infile, acadVersion)
+			try:  # DXFcodePage can be invalid
+				# Restart with infile changed to the correct encoding. There is no way of changing existing infile
+				# without losing its current position so we must go back to 'start' state.
+				if sys.version_info >= (3, 7):
+					infile.seek(0)
+					infile.reconfigure(encoding=DXFcodePage)
+				else:
+					infile.close()
+					infile = open(filename, encoding=DXFcodePage)
+				return start, (infile, acadVersion)
+			except:
+				pass
 
 	section = findObject(infile, 'section')
 	if section:
@@ -386,7 +389,7 @@ def readDXF(filename):
 			object data
 	where foo data is a list of sub-objects.  True object data
 	is of the form [code, data].
-"""	
+"""
 	infile = open(filename, encoding=None)
 
 	sm = StateMachine()
