@@ -1,6 +1,6 @@
 #dxfLibrary.py : provides functions for generating DXF files
 # --------------------------------------------------------------------------
-__version__ = "v1.41 - 2023.07.12"
+__version__ = "v1.42 - 2023.12.04"
 __author__ = "Stani Michiels(Stani), Remigiusz Fiedler(migius), Yorik van Havre"
 __license__ = "GPL"
 __url__ = "http://github.com/yorikvanhavre/Draft-dxf-importer"
@@ -16,18 +16,20 @@ See the blender wiki for documentation.
 Dedicated thread on BlenderArtists: http://blenderartists.org/forum/showthread.php?t=136439
 
 History
+v1.42 - 2023.12.04 by various
+ - Fixed acadVersion and DXFcodePage issues
 v1.41 - 2023.07.12 by Yorik and others
-    - Small compatibility fixes
+ - Small compatibility fixes
 v1.40 - 2018.10.22 by Yorik and others
-    - Fixed python3 support
+ - Fixed python3 support
 v1.39 - 2015.09.12 by Yorik
-    - Fixed export of utf8 strings (DXF R12 expects iso-8859-1 encoding)
+ - Fixed export of utf8 strings (DXF R12 expects iso-8859-1 encoding)
 v1.38 - 2014.07.06 by Yorik
  - integrated different commits from the blender branch:
-	- added (as default) writing to DXF file without RAM-buffering: faster and low-RAM-machines f
-	- bugfix POLYFACE
-	- added DXF-flags for POLYLINE and VERTEX class (NURBS-export)
-	- fix MTEXT newline bug (not supported by DXF-Exporter yet)
+ - added (as default) writing to DXF file without RAM-buffering: faster and low-RAM-machines f
+ - bugfix POLYFACE
+ - added DXF-flags for POLYLINE and VERTEX class (NURBS-export)
+ - fix MTEXT newline bug (not supported by DXF-Exporter yet)
 v1.37 - 2014.06.21 by Yorik
  - little fix to importer to support objects with no layer information (default to 0)
 v1.36 - 2013.12.21 by Yorik
@@ -306,7 +308,7 @@ class Face(_Entity):
 		while len(points)<4: #fix for r12 format
 			points.append(points[-1])
 		self.points=points
-		
+
 	def __str__(self):
 		out = '  0\n3DFACE\n%s%s\n' %(self._common(),_points(self.points))
 		#print 'deb:out=', out #-------------------
@@ -440,7 +442,7 @@ class LwPolyLine(_Entity):
 		self.org_point=org_point
 		self.flag=flag
 		self.width= None # dummy value
-		
+
 	def __str__(self):
 		result= '  0\nLWPOLYLINE\n%s ' %(self._common())
 		result+='  8\n%s\n' %self.layer
@@ -458,7 +460,7 @@ class LwPolyLine(_Entity):
 			if width2!=None: result+=' 41\n%s\n' %width2
 			if len(point)==6:
 				bulge = point[5]
-				if bulge: 
+				if bulge:
 					result+=' 42\n%s\n' %bulge
 		return result
 
@@ -656,7 +658,7 @@ class LineType(_Call):
 				elements += ' 49\n%s\n' %e
 			result += elements
 		return result
-		 
+
 
 #-----------------------------------------------
 class Style(_Call):
@@ -843,16 +845,16 @@ class Drawing(_Collection):
 		#self.acadver='9\n$ACADVER\n1\nAC1006\n'
 		self.acadver='  9\n$ACADVER\n  1\nAC1009\n'
 		"""DXF AutoCAD-Release format codes:
-		AC1021  2008, 2007 
-		AC1018  2006, 2005, 2004 
-		AC1015  2002, 2000i, 2000 
-		AC1014  R14,14.01 
-		AC1012  R13    
-		AC1009  R12,11 
-		AC1006  R10    
-		AC1004  R9    
-		AC1002  R2.6  
-		AC1.50  R2.05 
+		AC1021  2008, 2007
+		AC1018  2006, 2005, 2004
+		AC1015  2002, 2000i, 2000
+		AC1014  R14,14.01
+		AC1012  R13
+		AC1009  R12,11
+		AC1006  R10
+		AC1004  R9
+		AC1002  R2.6
+		AC1.50  R2.05
 		"""
 
 	def _name(self,x):
@@ -915,7 +917,7 @@ class Drawing(_Collection):
 		outfile=open(self.fileName,'w')
 		outfile.write(str(self))
 		outfile.close()
-		
+
 	def export(self):
 		outfile=open(self.fileName,'w')
 		header=[self.acadver]+[self._point(attr,getattr(self,attr))+'\n' for attr in _HEADER_POINTS]
@@ -1008,4 +1010,3 @@ if __name__=='__main__':
 	if not copy:
 		Draw.PupMenu('Error%t|This script requires a full python install')
 	else: test()
-	
